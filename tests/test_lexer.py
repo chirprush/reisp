@@ -62,6 +62,16 @@ def test_str_eof():
     err = next(lexer)
     assert err.type == LexErrType.StrEof
 
+def test_sym():
+    buffer = StringBuffer("'hello")
+    lexer = Lexer(buffer)
+    token = next(lexer)
+    assert token.type == TokenType.Sym
+    assert token.value == "'"
+    token = next(lexer)
+    assert token.type == TokenType.Ident
+    assert token.value == "hello"
+
 def test_str_escp():
     buffer = StringBuffer('  "he\\g"')
     lexer = Lexer(buffer)
