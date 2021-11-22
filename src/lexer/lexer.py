@@ -14,6 +14,9 @@ class LexErr:
     line: str
     loc: Loc
 
+    def is_err(self):
+        return True
+
 def is_int(word):
     # TODO: Add support for negative numbers
     return word.isnumeric()
@@ -33,14 +36,14 @@ class Lexer:
         char = None
         while (char := next(self.source)) is not None and char in " \n\t":
             pass
+        start = copy(self.source.loc)
         if char is None:
-            return Token(TokenType.Eof, None, copy(self.source.loc))
+            return Token(TokenType.Eof, None, start)
         elif char == "(" or char == ")":
-            return Token(TokenType.Paren, char, copy(self.source.loc))
+            return Token(TokenType.Paren, char, start)
         elif char == "'":
-            return Token(TokenType.Sym, char, copy(self.source.loc))
+            return Token(TokenType.Sym, char, start)
         elif char == '"':
-            start = copy(self.source.loc)
             value = ""
             while True:
                 new = next(self.source)
@@ -55,7 +58,7 @@ class Lexer:
                     elif escape_char == "n":
                         value += "\n"
                 elif new == '"':
-                    return Token(TokenType.Str, value, copy(self.source.loc))
+                    return Token(TokenType.Str, value, start)
                 else:
                     value += new
         word = char
@@ -67,9 +70,9 @@ class Lexer:
                 break
             word += new
         if word == "nil":
-            return Token(TokenType.Nil, word, copy(self.source.loc))
+            return Token(TokenType.Nil, word, start)
         elif word in ["true", "false"]:
-            return Token(TokenType.Bool, word, copy(self.source.loc))
+            return Token(TokenType.Bool, word, start)
         elif is_int(word):
-            return Token(TokenType.Int, word, copy(self.source.loc))
-        return Token(TokenType.Ident, word, copy(self.source.loc))
+            return Token(TokenType.Int, word, start)
+        return Token(TokenType.Ident, word, start)

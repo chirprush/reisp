@@ -18,3 +18,6 @@ class Token:
     type: TokenType
     value: str
     loc: Loc
+
+    def is_err(self):
+        return False

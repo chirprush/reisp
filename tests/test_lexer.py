@@ -6,7 +6,7 @@ class StringBuffer:
     def __init__(self, string):
         self.string = string
         self.current = string
-        self.loc = Loc(1, 0)
+        self.loc = Loc(0, -1)
 
     def __next__(self):
         if self.loc.col >= len(self.string):
