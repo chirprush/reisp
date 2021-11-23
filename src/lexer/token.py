@@ -6,12 +6,12 @@ class TokenType(Enum):
     Eof = auto()
     Nil = auto()
     Bool = auto()
-    Ident = auto()
     Int = auto()
-    Str = auto()
     # Float = auto()
-    Paren = auto()
+    Str = auto()
+    Ident = auto()
     Sym = auto()
+    Paren = auto()
 
 @dataclass
 class Token:
