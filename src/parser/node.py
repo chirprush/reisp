@@ -1,5 +1,5 @@
 from src.loc import Loc
-from typing import Callable
+from typing import Callable, List as TList
 from dataclasses import dataclass
 from enum import Enum, auto
 
@@ -40,7 +40,7 @@ class Node:
 
     @dataclass
     class Ident(BaseNode):
-        name: str
+        value: str
 
     @dataclass
     class Sym(BaseNode):
@@ -48,7 +48,7 @@ class Node:
 
     @dataclass
     class List(BaseNode):
-        values: list[BaseNode]
+        values: TList[BaseNode]
 
     @dataclass
     class BuiltinFunc(BaseNode):
@@ -56,5 +56,5 @@ class Node:
 
     @dataclass
     class UserFunc(BaseNode):
-        args: list[str]
+        args: TList[str]
         body: BaseNode

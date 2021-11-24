@@ -31,10 +31,16 @@ class Lexer:
         the line and column number.
         """
         self.source = source
+        self.restore = []
+
+    def get_char(self):
+        if self.restore:
+            return self.restore.pop()
+        return next(self.source)
 
     def __next__(self):
         char = None
-        while (char := next(self.source)) is not None and char in " \n\t":
+        while (char := self.get_char()) is not None and char in " \n\t":
             pass
         start = copy(self.source.loc)
         if char is None:
@@ -46,11 +52,11 @@ class Lexer:
         elif char == '"':
             value = ""
             while True:
-                new = next(self.source)
+                new = self.get_char()
                 if new is None:
                     return LexErr(LexErrType.StrEof, self.source.current, start)
                 elif new == "\\":
-                    escape_char = next(self.source)
+                    escape_char = self.get_char()
                     if escape_char is None:
                         return LexErr(LexErrType.StrEof, self.source.current, copy(self.source.loc))
                     elif escape_char not in "n":
@@ -63,10 +69,13 @@ class Lexer:
                     value += new
         word = char
         while True:
-            new = next(self.source)
+            new = self.get_char()
             if new is None:
                 break
             elif new in " \t\n":
+                break
+            elif new in "()":
+                self.restore.append(new)
                 break
             word += new
         if word == "nil":

@@ -9,18 +9,21 @@ class StringBuffer:
         self.loc = Loc(0, -1)
 
     def __next__(self):
+        self.loc.col += 1
         if self.loc.col >= len(self.string):
             return None
         char = self.string[self.loc.col]
-        self.loc.col += 1
         return char
+
+    def __repr__(self):
+        return f"StringBuffer('{self.string[self.loc.col:]}')"
 
 def test_string_buffer():
     buffer = StringBuffer("qwertyuiop")
     assert next(buffer) == "q"
     assert next(buffer) == "w"
     assert next(buffer) == "e"
-    assert buffer.loc == Loc(1, 3)
+    assert buffer.loc == Loc(0, 2)
 
 def test_eof():
     buffer = StringBuffer("  ")
