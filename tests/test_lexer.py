@@ -1,6 +1,6 @@
-from src.lexer.lexer import Lexer, LexErrType
-from src.lexer.token import TokenType
-from src.loc import Loc
+from reisp.lexer.lexer import Lexer, LexErrType
+from reisp.lexer.token import TokenType
+from reisp.loc import Loc
 
 class StringBuffer:
     def __init__(self, string):

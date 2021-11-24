@@ -1,7 +1,7 @@
-from src.parser.node import Node
-from src.lexer.lexer import Lexer
-from src.lexer.token import Token, TokenType
-from src.loc import Loc
+from reisp.parser.node import Node
+from reisp.lexer.lexer import Lexer
+from reisp.lexer.token import Token, TokenType
+from reisp.loc import Loc
 from enum import Enum, auto
 from dataclasses import dataclass
 from copy import copy

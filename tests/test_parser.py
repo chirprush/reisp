@@ -1,8 +1,8 @@
-from src.parser.parser import Parser, ParserErr
-from src.parser.node import Node
-from src.lexer.lexer import Lexer, LexErrType
-from src.lexer.token import TokenType
-from src.loc import Loc
+from reisp.parser.parser import Parser, ParserErr
+from reisp.parser.node import Node
+from reisp.lexer.lexer import Lexer, LexErrType
+from reisp.lexer.token import TokenType
+from reisp.loc import Loc
 
 class StringBuffer:
     def __init__(self, string):

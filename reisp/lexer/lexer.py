@@ -1,5 +1,5 @@
-from src.loc import Loc
-from src.lexer.token import TokenType, Token
+from reisp.loc import Loc
+from reisp.lexer.token import TokenType, Token
 from dataclasses import dataclass
 from enum import Enum, auto
 from copy import copy

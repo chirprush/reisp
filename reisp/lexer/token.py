@@ -1,4 +1,4 @@
-from src.loc import Loc
+from reisp.loc import Loc
 from enum import Enum, auto
 from dataclasses import dataclass
 

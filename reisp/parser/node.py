@@ -1,4 +1,4 @@
-from src.loc import Loc
+from reisp.loc import Loc
 from typing import Callable, List as TList
 from dataclasses import dataclass
 from enum import Enum, auto
