@@ -9,8 +9,8 @@ Reisp aims to be a statically typed version of Lisp
     (+ a b))
 
 (defstruct Parser ()
-    (source str
-	index int))
+    source str
+    index int)
 
 (defn Parser.end () bool
 	(>= index (len source)))
