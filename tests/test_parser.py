@@ -1,5 +1,5 @@
 from reisp.parser.parser import Parser, ParserErr
-from reisp.parser.node import Node
+from reisp.ast.node import Node
 from reisp.lexer.lexer import Lexer, LexErrType
 from reisp.lexer.token import TokenType
 from reisp.loc import Loc

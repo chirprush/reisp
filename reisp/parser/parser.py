@@ -1,31 +1,10 @@
-from reisp.parser.node import Node
+from reisp.ast.node import Node
 from reisp.lexer.lexer import Lexer
 from reisp.lexer.token import Token, TokenType
+from reisp.parser.parser_err import ParserErr
 from reisp.loc import Loc
-from enum import Enum, auto
 from dataclasses import dataclass
 from copy import copy
-
-@dataclass
-class ParserErrBase:
-    line: str
-    loc: Loc
-
-    def is_err(self):
-        return True
-
-class ParserErr:
-    @dataclass
-    class ExpectedType(ParserErrBase):
-        type: TokenType
-
-    @dataclass
-    class ExpectedValue(ParserErrBase):
-        value: str
-
-    @dataclass
-    class ExpectedExpr(ParserErrBase):
-        pass
 
 def parser_func(f):
     def inner(parser):
@@ -60,7 +39,7 @@ class Parser:
             return token
         self.save.append(token)
         if token.type != type:
-            return ParserErr.ExpectedType(type=type, line=self.source.current, loc=token.loc)
+            return ParserErr.ExpectedType(type=type, loc=token.loc)
         return token
 
     def expect_value(self, type: TokenType, value: str):
@@ -69,9 +48,9 @@ class Parser:
             return token
         self.save.append(token)
         if token.type != type:
-            return ParserErr.ExpectedType(type=type, line=self.source.current, loc=token.loc)
+            return ParserErr.ExpectedType(type=type, loc=token.loc)
         elif token.value != value:
-            return ParserErr.ExpectedValue(value=value, line=self.source.current, loc=token.loc)
+            return ParserErr.ExpectedValue(value=value, loc=token.loc)
         return token
 
     @parser_func
@@ -145,4 +124,4 @@ class Parser:
             return result
         elif not (result := self.parse_list()).is_err():
             return result
-        return ParserErr.ExpectedExpr(line=self.source.current, loc=self.source.loc)
+        return ParserErr.ExpectedExpr(loc=self.source.loc)
