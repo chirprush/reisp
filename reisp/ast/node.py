@@ -44,7 +44,9 @@ class Node:
         value: str
 
         def eval(self, env):
-            return env.get(self.value)
+            if (result := env.get(self.value)) is None:
+                return NodeErr(NodeErrType.IdentNotFound, self)
+            return result
 
     @dataclass
     class Sym(BaseNode):
