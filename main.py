@@ -40,7 +40,13 @@ else:
         # stop the parsing after the first expression and see if it is
         # at the end of a line.
         try:
-            print(parser.parse_expr().eval(env))
+            if (node := parser.parse_expr()).is_err():
+                print(node)
+                continue
+            if (value := node.eval(env)).is_err():
+                print(value)
+                continue
+            print(value.show())
         except EOFError:
             print("\nExiting...")
             break

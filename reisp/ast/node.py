@@ -18,12 +18,18 @@ class Node:
         def eval(self, env):
             return self
 
+        def show(self):
+            return "nil"
+
     @dataclass
     class Bool(BaseNode):
         value: bool
 
         def eval(self, env):
             return self
+
+        def show(self):
+            return "true" if self.value else "false"
 
     @dataclass
     class Int(BaseNode):
@@ -32,12 +38,26 @@ class Node:
         def eval(self, env):
             return self
 
+        def show(self):
+            return str(self.value)
+
     @dataclass
     class Str(BaseNode):
         value: str
 
         def eval(self, env):
             return self
+
+        def show(self):
+            result = '"'
+            for i in self.value:
+                if i in '"\\':
+                    result += "\\"
+                elif i == "\n":
+                    result += "\\n"
+                    continue
+                result += i
+            return result + '"'
 
     @dataclass
     class Ident(BaseNode):
@@ -48,12 +68,20 @@ class Node:
                 return NodeErr(NodeErrType.IdentNotFound, self)
             return result
 
+        def show(self):
+            return self.value
+
     @dataclass
     class Sym(BaseNode):
         value: BaseNode
 
         def eval(self, env):
             return self
+
+        def show(self):
+            if isinstance(self.value, Node.Sym):
+                return "'" + self.value.show()
+            return self.value.show()
 
     @dataclass
     class List(BaseNode):
@@ -68,12 +96,24 @@ class Node:
                 return NodeErr(NodeErrType.NotCallable, self.values[0])
             return func.call(self, env, self.values[1:])
 
+        def show(self):
+            result = "("
+            for i, value in enumerate(self.values):
+                result += value.show()
+                if i != len(self.values) - 1:
+                    result += " "
+            return result + ")"
+
     @dataclass
     class BuiltinFunc(BaseNode):
+        name: str
         func: Callable
 
         def eval(self, env):
             return env
+
+        def show(self):
+            return f"#<func {self.name}>"
 
         def call(self, source, env, args):
             return self.func(source, env, args)
@@ -83,6 +123,7 @@ class Node:
 
     @dataclass
     class UserFunc(BaseNode):
+        name: str
         args: TList[str]
         body: BaseNode
 
@@ -101,6 +142,9 @@ class Node:
 
         def eval(self, env):
             return self
+
+        def show(self):
+            return f"#<func {self.name}>"
 
         def is_callable(self):
             return True

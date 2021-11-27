@@ -44,10 +44,14 @@ class Lexer:
                     escape_char = self.get_char()
                     if escape_char is None:
                         return LexErr(LexErrType.StrEof, copy(self.source.loc))
-                    elif escape_char not in "n":
-                        return LexErr(LexErrType.StrEsc, copy(self.source.loc))
                     elif escape_char == "n":
                         value += "\n"
+                    elif escape_char == "\\":
+                        value += "\\"
+                    elif escape_char == "\"":
+                        value += "\""
+                    else:
+                        return LexErr(LexErrType.StrEsc, copy(self.source.loc))
                 elif new == '"':
                     return Token(TokenType.Str, value, start)
                 else:
