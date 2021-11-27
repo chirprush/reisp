@@ -1,4 +1,5 @@
 from reisp.parser.parser import Parser
+from reisp.env.env import Env
 from reisp.loc import Loc
 
 from argparse import ArgumentParser
@@ -24,6 +25,8 @@ arg_parser.add_argument("file", nargs="?")
 
 args = arg_parser.parse_args()
 
+env = Env()
+
 if args.file:
     # Parse and run the file
     pass
@@ -37,7 +40,7 @@ else:
         # stop the parsing after the first expression and see if it is
         # at the end of a line.
         try:
-            print(parser.parse_expr())
+            print(parser.parse_expr().eval(env))
         except EOFError:
             print("\nExiting...")
             break

@@ -2,7 +2,7 @@ from reisp.loc import Loc
 from dataclasses import dataclass
 from enum import Enum, auto
 
-class NodeErrType:
+class NodeErrType(Enum):
     ZeroDiv = auto()
     NotCallable = auto()
     IdentNotFound = auto()
@@ -12,3 +12,6 @@ class NodeErrType:
 class NodeErr:
     type: NodeErrType
     node: 'BaseNode'
+
+    def is_err(self):
+        return True

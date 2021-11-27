@@ -60,9 +60,9 @@ class Node:
         values: TList[BaseNode]
 
         def eval(self, env):
-            if len(values) == 0:
+            if len(self.values) == 0:
                 return self
-            if (func := self.values[0].eval()).is_err():
+            if (func := self.values[0].eval(env)).is_err():
                 return func
             elif not func.is_callable():
                 return NodeErr(NodeErrType.NotCallable, self.values[0])
