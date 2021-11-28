@@ -19,7 +19,7 @@ class NodeErr:
         elif self.type == NodeErrType.NotCallable:
             return "Cannot call a non-function value"
         elif self.type == NodeErrType.IdentNotFound:
-            return f"Invalid identifier: '{self.node.value}'"
+            return f"Identifier '{self.node.value}' does not exist"
         elif self.type == NodeErrType.InvalidArgsNum:
             return "Invalid number of arguments to function"
         raise ValueError("This shouldn't happen")

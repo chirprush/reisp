@@ -27,6 +27,13 @@ class Parser:
         # Tokens that were restored during backtracking
         self.restore = []
 
+    def is_eol(self):
+        return self.source.is_eol() and not self.restore
+
+    def skip_line(self):
+        self.source.skip_line()
+        self.restore = []
+
     def next_token(self):
         if self.restore:
             return self.restore.pop()
