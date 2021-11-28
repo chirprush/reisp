@@ -2,6 +2,8 @@ from reisp.parser.parser import Parser
 from reisp.env.env import Env
 from reisp.loc import Loc
 
+from sys import stderr
+
 from argparse import ArgumentParser
 
 class ReplBuffer:
@@ -17,6 +19,9 @@ class ReplBuffer:
     def skip_line(self):
         self.loc.col = len(self.lines[-1])
 
+    def get_line(self, linenr):
+        return self.lines[linenr - 1]
+
     def __next__(self):
         if not self.lines or self.loc.col >= len(self.lines[-1]):
             self.lines.append(input("> ") + "\n")
@@ -26,34 +31,47 @@ class ReplBuffer:
         self.loc.col += 1
         return char
 
-arg_parser = ArgumentParser(prog="reisp", description="A statically typed, interpreted, custom flavor of Lisp")
-arg_parser.add_argument("file", nargs="?")
+RED = "\x01\033[31m\x02"
+BLUE = "\x01\033[34m\x02"
+RESET = "\x01\033[0m\x02"
 
-args = arg_parser.parse_args()
+def show_err(buffer, loc, message):
+    stderr.write(f"{loc.show()}{message}\n")
+    line = buffer.get_line(loc.line)
+    stderr.write(f"    {line[:loc.col]}{RED}{line[loc.col]}{RESET}{line[loc.col + 1:]}")
+    stderr.write(f"    {' ' * loc.col}{BLUE}^{RESET}\n")
 
-env = Env()
-
-if args.file:
-    # Parse and run the file
+def run_file(f):
     pass
-else:
-    # Run the REPL
+
+def run_repl():
+    env = Env()
     input_buffer = ReplBuffer()
     parser = Parser(input_buffer)
     while True:
         try:
             if (node := parser.parse_expr()).is_err():
-                print(node.loc.show() + node.show())
+                show_err(input_buffer, node.loc, node.show())
                 parser.skip_line()
                 continue
             if not parser.is_eol():
-                print(input_buffer.loc.show() + "Unexpected text after expression")
+                show_err(input_buffer, input_buffer.loc, "Unexpected text after expression")
                 parser.skip_line()
                 continue
             if (value := node.eval(env)).is_err():
-                print(node.loc.show() + value.show())
+                show_err(input_buffer, node.loc, value.show())
                 continue
             print(value.show())
         except EOFError:
-            print("\nExiting...")
+            stderr.write("\nExiting...\n")
             break
+
+arg_parser = ArgumentParser(prog="reisp", description="A statically typed, interpreted, custom flavor of Lisp")
+arg_parser.add_argument("file", nargs="?")
+
+args = arg_parser.parse_args()
+
+if args.file:
+    run_file(args.file)
+else:
+    run_repl()
