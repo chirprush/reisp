@@ -100,7 +100,7 @@ class Parser:
             return result
         elif (result := self.parse_expr()).is_err():
             return result
-        return Node.Sym(value=result, loc=result.loc)
+        return Node.Quote(value=result, loc=result.loc)
 
     @parser_func
     def parse_list(self):

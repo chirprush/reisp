@@ -72,16 +72,16 @@ class Node:
             return self.value
 
     @dataclass
-    class Sym(BaseNode):
+    class Quote(BaseNode):
         value: BaseNode
 
         def eval(self, env):
-            if isinstance(self.value, Node.Sym):
+            if isinstance(self.value, Node.Quote):
                 return self
             return self.value
 
         def show(self):
-            if isinstance(self.value, Node.Sym):
+            if isinstance(self.value, Node.Quote):
                 return "'" + self.value.show()
             return self.value.show()
 

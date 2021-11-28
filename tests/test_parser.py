@@ -77,12 +77,12 @@ def test_parse_sym():
     assert node.value == 1234
     node = parser.parse_sym()
     assert not node.is_err()
-    assert isinstance(node, Node.Sym)
+    assert isinstance(node, Node.Quote)
     assert isinstance(node.value, Node.Ident)
     assert node.value.value == "hello"
     node = parser.parse_sym()
     assert not node.is_err()
-    assert isinstance(node, Node.Sym)
+    assert isinstance(node, Node.Quote)
     assert not node.value.is_err()
     assert isinstance(node.value, Node.List)
 
