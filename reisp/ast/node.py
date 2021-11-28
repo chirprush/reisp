@@ -76,7 +76,9 @@ class Node:
         value: BaseNode
 
         def eval(self, env):
-            return self
+            if isinstance(self.value, Node.Sym):
+                return self
+            return self.value
 
         def show(self):
             if isinstance(self.value, Node.Sym):
