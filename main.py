@@ -41,10 +41,10 @@ else:
         # at the end of a line.
         try:
             if (node := parser.parse_expr()).is_err():
-                print(node)
+                print(node.loc.show() + node.show())
                 continue
             if (value := node.eval(env)).is_err():
-                print(value)
+                print(node.loc.show() + value.show())
                 continue
             print(value.show())
         except EOFError:

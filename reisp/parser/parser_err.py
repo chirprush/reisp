@@ -14,11 +14,18 @@ class ParserErr:
     class ExpectedType(ParserErrBase):
         type: TokenType
 
+        def show(self):
+            return f"Expected {self.type.show()} token"
+
     @dataclass
     class ExpectedValue(ParserErrBase):
         value: str
 
+        def show(self):
+            return f"Expected text {str(self.value)}"
+
     @dataclass
     class ExpectedExpr(ParserErrBase):
-        pass
+        def show(self):
+            return f"Expected an expression"
 
