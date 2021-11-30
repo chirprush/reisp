@@ -7,26 +7,28 @@ from argparse import ArgumentParser
 class ReplBuffer:
     def __init__(self):
         self.lines = []
-        self.loc = Loc(0, -1)
+        self.loc = Loc(-1, -1)
+        self.skip = False
 
     def is_eol(self):
         if not self.lines:
             return True
-        return not self.lines[-1][self.loc.col+1:].strip()
+        return not self.lines[self.loc.line][self.loc.col+1:].strip()
 
     def skip_line(self):
-        self.loc.col = len(self.lines[-1])
+        self.skip = True
 
     def get_line(self, linenr):
-        return self.lines[linenr - 1]
+        return self.lines[linenr]
 
     def __next__(self):
         self.loc.col += 1
-        if not self.lines or self.loc.col >= len(self.lines[-1]):
+        if self.skip or not self.lines or self.loc.col >= len(self.lines[self.loc.line]):
             self.lines.append(input("> ") + "\n")
             self.loc.line += 1
-            self.loc.col = -1
-        char = self.lines[-1][self.loc.col]
+            self.loc.col = 0
+            self.skip = False
+        char = self.lines[self.loc.line][self.loc.col]
         return char
 
 # TODO: Might want to change this depending on whether the terminal

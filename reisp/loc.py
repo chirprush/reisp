@@ -6,4 +6,4 @@ class Loc:
     col: int
 
     def show(self):
-        return f"{self.line}:{self.col + 1}:"
+        return f"{self.line + 1}:{self.col + 1}:"

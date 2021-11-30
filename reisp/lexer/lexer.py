@@ -19,6 +19,9 @@ class Lexer:
         self.source = source
         self.restore = []
 
+    def skip_line(self):
+        self.restore = []
+
     def get_char(self):
         if self.restore:
             return self.restore.pop()

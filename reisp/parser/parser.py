@@ -33,6 +33,7 @@ class Parser:
 
     def skip_line(self):
         self.source.skip_line()
+        self.lexer.skip_line()
         self.restore = []
 
     def next_token(self):
@@ -137,11 +138,11 @@ class Parser:
 
     @parser_func
     def parse_quote(self):
-        if (result := self.expect_type(TokenType.Quote)).is_err():
+        if (quote := self.expect_type(TokenType.Quote)).is_err():
+            return quote
+        if (result := self.parse_expr()).is_err():
             return result
-        elif (result := self.parse_expr()).is_err():
-            return result
-        return Node.Quote(value=result, loc=result.loc)
+        return Node.Quote(value=result, loc=quote.loc)
 
     @parser_func
     def parse_list(self):
@@ -174,4 +175,7 @@ class Parser:
             return result
         elif not (result := self.parse_list()).is_err():
             return result
-        return ParserErr.ExpectedExpr(loc=result.loc)
+        loc = result.loc
+        if self.restore:
+            loc = self.restore[-1].loc
+        return ParserErr.ExpectedExpr(loc=copy(loc))
