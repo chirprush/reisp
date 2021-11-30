@@ -64,11 +64,11 @@ def test_str_eof():
     err = next(lexer)
     assert err.type == LexErrType.StrEof
 
-def test_sym():
+def test_quote():
     buffer = StringBuffer("'hello")
     lexer = Lexer(buffer)
     token = next(lexer)
-    assert token.type == TokenType.Sym
+    assert token.type == TokenType.Quote
     assert token.value == "'"
     token = next(lexer)
     assert token.type == TokenType.Ident
@@ -103,6 +103,25 @@ def test_ident():
     token = next(lexer)
     assert token.type == TokenType.Eof
     assert token.value is None
+
+def test_type():
+    buffer = StringBuffer("[] int str type bool str sym func any")
+    lexer = Lexer(buffer)
+    values = ["int", "str", "type", "bool", "str", "sym", "func", "any"]
+    token = next(lexer)
+    assert token.type == TokenType.Paren
+    assert token.value == "["
+    token = next(lexer)
+    assert token.type == TokenType.Paren
+    assert token.value == "]"
+    for val in values:
+        token = next(lexer)
+        assert token.type == TokenType.Type
+        assert token.value == val
+    token = next(lexer)
+    assert token.type == TokenType.Eof
+    assert token.value is None
+
 
 def test_whitespace():
     buffer = StringBuffer("   \n\t\t\t(")

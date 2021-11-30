@@ -2,6 +2,7 @@ from reisp.ast.node import Node
 from reisp.lexer.lexer import Lexer
 from reisp.lexer.token import Token, TokenType
 from reisp.parser.parser_err import ParserErr
+from reisp.types.type import Type
 from reisp.loc import Loc
 from dataclasses import dataclass
 from copy import copy
@@ -67,6 +68,46 @@ class Parser:
         return Node.Nil(loc=result.loc)
 
     @parser_func
+    def parse_type_expr(self):
+        if (paren := self.expect_value(TokenType.Paren, "[")).is_err():
+            return paren
+        if (value := self.parse_type()).is_err():
+            return value
+        if (result := self.expect_value(TokenType.Paren, "]")).is_err():
+            return result
+        return value
+
+    @parser_func
+    def parse_type_atom(self):
+        if (result := self.expect_type(TokenType.Type)).is_err():
+            if (result_inner := self.expect_type(TokenType.Nil)).is_err():
+                return result
+            result = result_inner
+        if result.type == TokenType.Nil:
+            return Node.Type(value=Type.Nil(), loc=result.loc)
+        elif result.value == "type":
+            return Node.Type(value=Type.Type(), loc=result.loc)
+        elif result.value == "bool":
+            return Node.Type(value=Type.Bool(), loc=result.loc)
+        elif result.value == "int":
+            return Node.Type(value=Type.Int(), loc=result.loc)
+        elif result.value == "str":
+            return Node.Type(value=Type.Str(), loc=result.loc)
+        elif result.value == "sym":
+            return Node.Type(value=Type.Sym(), loc=result.loc)
+        elif result.value == "func":
+            return Node.Type(value=Type.Func(), loc=result.loc)
+        elif result.value == "any":
+            return Node.Type(value=Type.Any(), loc=result.loc)
+        raise ValueError("This shouldn't happen")
+
+    @parser_func
+    def parse_type(self):
+        if (result := self.parse_type_atom()).is_err():
+            return result
+        return result
+
+    @parser_func
     def parse_bool(self):
         if (result := self.expect_type(TokenType.Bool)).is_err():
             return result
@@ -95,8 +136,8 @@ class Parser:
         return Node.Ident(value=result.value, loc=result.loc)
 
     @parser_func
-    def parse_sym(self):
-        if (result := self.expect_type(TokenType.Sym)).is_err():
+    def parse_quote(self):
+        if (result := self.expect_type(TokenType.Quote)).is_err():
             return result
         elif (result := self.parse_expr()).is_err():
             return result
@@ -119,6 +160,8 @@ class Parser:
     def parse_expr(self):
         if not (result := self.parse_nil()).is_err():
             return result
+        elif not (result := self.parse_type_expr()).is_err():
+            return result
         elif not (result := self.parse_bool()).is_err():
             return result
         elif not (result := self.parse_int()).is_err():
@@ -127,8 +170,8 @@ class Parser:
             return result
         elif not (result := self.parse_ident()).is_err():
             return result
-        elif not (result := self.parse_sym()).is_err():
+        elif not (result := self.parse_quote()).is_err():
             return result
         elif not (result := self.parse_list()).is_err():
             return result
-        return ParserErr.ExpectedExpr(loc=self.source.loc)
+        return ParserErr.ExpectedExpr(loc=result.loc)

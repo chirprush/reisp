@@ -1,20 +1,18 @@
 from reisp.parser.parser import Parser
 from reisp.env.env import Env
 from reisp.loc import Loc
-
 from sys import stderr
-
 from argparse import ArgumentParser
 
 class ReplBuffer:
     def __init__(self):
         self.lines = []
-        self.loc = Loc(0, 0)
+        self.loc = Loc(0, -1)
 
     def is_eol(self):
         if not self.lines:
             return True
-        return not self.lines[-1][self.loc.col:].strip()
+        return not self.lines[-1][self.loc.col+1:].strip()
 
     def skip_line(self):
         self.loc.col = len(self.lines[-1])
@@ -23,19 +21,24 @@ class ReplBuffer:
         return self.lines[linenr - 1]
 
     def __next__(self):
+        self.loc.col += 1
         if not self.lines or self.loc.col >= len(self.lines[-1]):
             self.lines.append(input("> ") + "\n")
             self.loc.line += 1
-            self.loc.col = 0
+            self.loc.col = -1
         char = self.lines[-1][self.loc.col]
-        self.loc.col += 1
         return char
 
+# TODO: Might want to change this depending on whether the terminal
+# supports colors or not
 RED = "\x01\033[31m\x02"
 BLUE = "\x01\033[34m\x02"
 RESET = "\x01\033[0m\x02"
 
 def show_err(buffer, loc, message):
+    # TODO: Maybe add an 'end' attribute to Node's which is of type
+    # Loc as well. This would allow for the entire error-causing
+    # string to be highlighted
     stderr.write(f"{loc.show()}{message}\n")
     line = buffer.get_line(loc.line)
     stderr.write(f"    {line[:loc.col]}{RED}{line[loc.col]}{RESET}{line[loc.col + 1:]}")
@@ -59,8 +62,9 @@ def run_repl():
                 parser.skip_line()
                 continue
             if (value := node.eval(env)).is_err():
-                show_err(input_buffer, node.loc, value.show())
+                show_err(input_buffer, value.node.loc, value.show())
                 continue
+            parser.restore = []
             print(value.show())
         except EOFError:
             stderr.write("\nExiting...\n")

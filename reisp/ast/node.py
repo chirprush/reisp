@@ -1,5 +1,6 @@
 from reisp.loc import Loc
 from reisp.ast.node_err import NodeErrType, NodeErr
+from reisp.types.type import BaseType, Type, resolve_type
 from typing import Callable, List as TList
 from dataclasses import dataclass
 
@@ -15,6 +16,9 @@ class BaseNode:
 
 class Node:
     class Nil(BaseNode):
+        def type(self):
+            return Type.Nil()
+
         def eval(self, env):
             return self
 
@@ -22,8 +26,24 @@ class Node:
             return "nil"
 
     @dataclass
+    class Type(BaseNode):
+        value: BaseType
+
+        def type(self):
+            return Type.Type()
+
+        def eval(self, env):
+            return self
+
+        def show(self):
+            return "[" + self.value.show() + "]"
+
+    @dataclass
     class Bool(BaseNode):
         value: bool
+
+        def type(self):
+            return Type.Bool()
 
         def eval(self, env):
             return self
@@ -35,6 +55,9 @@ class Node:
     class Int(BaseNode):
         value: int
 
+        def type(self):
+            return Type.Int()
+
         def eval(self, env):
             return self
 
@@ -44,6 +67,9 @@ class Node:
     @dataclass
     class Str(BaseNode):
         value: str
+
+        def type(self):
+            return Type.Str()
 
         def eval(self, env):
             return self
@@ -63,6 +89,9 @@ class Node:
     class Ident(BaseNode):
         value: str
 
+        def type(self):
+            return Type.Sym()
+
         def eval(self, env):
             if (result := env.get(self.value)) is None:
                 return NodeErr(NodeErrType.IdentNotFound, self)
@@ -74,6 +103,9 @@ class Node:
     @dataclass
     class Quote(BaseNode):
         value: BaseNode
+
+        def type(self):
+            return Type.Quote(self.value.type())
 
         def eval(self, env):
             if isinstance(self.value, Node.Quote):
@@ -88,6 +120,9 @@ class Node:
     @dataclass
     class List(BaseNode):
         values: TList[BaseNode]
+
+        def type(self):
+            return Type.List(resolve_type(self.values))
 
         def eval(self, env):
             if len(self.values) == 0:
@@ -111,23 +146,29 @@ class Node:
         name: str
         func: Callable
 
+        def is_callable(self):
+            return True
+
+        def call(self, source, env, args):
+            return self.func(source, env, args)
+
+        def type(self):
+            return Type.Func()
+
         def eval(self, env):
             return env
 
         def show(self):
             return f"#<func {self.name}>"
 
-        def call(self, source, env, args):
-            return self.func(source, env, args)
-
-        def is_callable(self):
-            return True
-
     @dataclass
     class UserFunc(BaseNode):
         name: str
         args: TList[str]
         body: BaseNode
+
+        def is_callable(self):
+            return True
 
         def call(self, source, env, args):
             if len(args) != len(self.args):
@@ -142,11 +183,11 @@ class Node:
             self.env.pop()
             return result
 
+        def type(self):
+            return Type.Func()
+
         def eval(self, env):
             return self
 
         def show(self):
             return f"#<func {self.name}>"
-
-        def is_callable(self):
-            return True

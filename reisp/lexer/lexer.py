@@ -1,6 +1,7 @@
 from reisp.loc import Loc
 from reisp.lexer.token import TokenType, Token
 from reisp.lexer.lexer_err import LexErrType, LexErr
+from reisp.types.type import type_keywords
 from copy import copy
 
 def is_int(word):
@@ -30,10 +31,10 @@ class Lexer:
         start = copy(self.source.loc)
         if char is None:
             return Token(TokenType.Eof, None, start)
-        elif char == "(" or char == ")":
+        elif char in "()[]":
             return Token(TokenType.Paren, char, start)
         elif char == "'":
-            return Token(TokenType.Sym, char, start)
+            return Token(TokenType.Quote, char, start)
         elif char == '"':
             value = ""
             while True:
@@ -63,12 +64,14 @@ class Lexer:
                 break
             elif new in " \t\n":
                 break
-            elif new in "()":
+            elif new in "()[]":
                 self.restore.append(new)
                 break
             word += new
         if word == "nil":
             return Token(TokenType.Nil, word, start)
+        elif word in type_keywords:
+            return Token(TokenType.Type, word, start)
         elif word in ["true", "false"]:
             return Token(TokenType.Bool, word, start)
         elif is_int(word):

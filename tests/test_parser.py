@@ -1,5 +1,6 @@
 from reisp.parser.parser import Parser, ParserErr
 from reisp.ast.node import Node
+from reisp.types.type import Type
 from reisp.lexer.lexer import Lexer, LexErrType
 from reisp.lexer.token import TokenType
 from reisp.loc import Loc
@@ -25,6 +26,14 @@ def test_parse_nil():
     node = parser.parse_nil()
     assert not node.is_err()
     assert isinstance(node, Node.Nil)
+
+def test_parse_type_expr():
+    buffer = StringBuffer("[int]")
+    parser = Parser(buffer)
+    node = parser.parse_type_expr()
+    assert not node.is_err()
+    assert isinstance(node, Node.Type)
+    assert isinstance(node.value, Type.Int)
 
 def test_parse_bool():
     buffer = StringBuffer("\nfalse   true")
@@ -66,21 +75,21 @@ def test_parse_ident():
     assert isinstance(node, Node.Ident)
     assert node.value == "qwerty1234__v**"
 
-def test_parse_sym():
+def test_parse_quote():
     buffer = StringBuffer("\t 1234 'hello '(2 1 1)")
     parser = Parser(buffer)
-    node = parser.parse_sym()
+    node = parser.parse_quote()
     assert node.is_err()
     node = parser.parse_int()
     assert not node.is_err()
     assert isinstance(node, Node.Int)
     assert node.value == 1234
-    node = parser.parse_sym()
+    node = parser.parse_quote()
     assert not node.is_err()
     assert isinstance(node, Node.Quote)
     assert isinstance(node.value, Node.Ident)
     assert node.value.value == "hello"
-    node = parser.parse_sym()
+    node = parser.parse_quote()
     assert not node.is_err()
     assert isinstance(node, Node.Quote)
     assert not node.value.is_err()
