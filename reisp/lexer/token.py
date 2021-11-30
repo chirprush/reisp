@@ -33,6 +33,8 @@ class TokenType(Enum):
             return "a symbol quote"
         elif self == TokenType.Paren:
             return "a parenthesis"
+        elif self == TokenType.Paren:
+            return "a parenthesis"
         raise ValueError("This shouldn't happen")
 
 @dataclass

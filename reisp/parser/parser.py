@@ -42,6 +42,12 @@ class Parser:
         token = next(self.lexer)
         return token
 
+    def peek(self):
+        if not self.restore:
+            self.restore.append(next(self.lexer))
+        return self.restore[-1]
+
+    # TODO: If we add the token to self.restore on fail, do we even need @parser_func?
     def expect_type(self, type: TokenType):
         token = self.next_token()
         if token.is_err():
@@ -148,10 +154,15 @@ class Parser:
     def parse_list(self):
         if (paren := self.expect_value(TokenType.Paren, "(")).is_err():
             return paren
+        if self.peek().value == ")":
+            self.restore.pop()
+            return Node.List(values=[], loc=paren.loc)
         values = []
         while True:
-            if (result := self.parse_expr()).is_err():
+            if self.peek().value == ")":
                 break
+            elif (result := self.parse_expr()).is_err():
+                return result
             values.append(result)
         if (result := self.expect_value(TokenType.Paren, ")")).is_err():
             return result
@@ -159,23 +170,25 @@ class Parser:
 
     @parser_func
     def parse_expr(self):
-        if not (result := self.parse_nil()).is_err():
-            return result
-        elif not (result := self.parse_type_expr()).is_err():
-            return result
-        elif not (result := self.parse_bool()).is_err():
-            return result
-        elif not (result := self.parse_int()).is_err():
-            return result
-        elif not (result := self.parse_str()).is_err():
-            return result
-        elif not (result := self.parse_ident()).is_err():
-            return result
-        elif not (result := self.parse_quote()).is_err():
-            return result
-        elif not (result := self.parse_list()).is_err():
-            return result
-        loc = result.loc
+        loc = self.source.loc
+        if self.peek().type == TokenType.Nil:
+            return self.parse_nil()
+        elif self.peek().value == "[":
+            return self.parse_type_expr()
+        elif self.peek().type == TokenType.Bool:
+            return self.parse_bool()
+        elif self.peek().type == TokenType.Int:
+            return self.parse_int()
+        elif self.peek().type == TokenType.Str:
+            return self.parse_str()
+        elif self.peek().type == TokenType.Ident:
+            return self.parse_ident()
+        elif self.peek().type == TokenType.Quote:
+            return self.parse_quote()
+        elif self.peek().value == "(":
+            return self.parse_list()
         if self.restore:
             loc = self.restore[-1].loc
+        if self.peek().type == TokenType.Type:
+            return ParserErr.TypeKeyword(loc=copy(loc))
         return ParserErr.ExpectedExpr(loc=copy(loc))

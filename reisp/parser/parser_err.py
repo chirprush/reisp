@@ -25,6 +25,11 @@ class ParserErr:
             return f"Expected text {str(self.value)}"
 
     @dataclass
+    class TypeKeyword(ParserErrBase):
+        def show(self):
+            return "Type keyword found outside type expression"
+
+    @dataclass
     class ExpectedExpr(ParserErrBase):
         def show(self):
             return f"Expected an expression"
