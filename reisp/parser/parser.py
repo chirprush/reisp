@@ -47,7 +47,6 @@ class Parser:
             self.restore.append(next(self.lexer))
         return self.restore[-1]
 
-    # TODO: If we add the token to self.restore on fail, do we even need @parser_func?
     def expect_type(self, type: TokenType):
         token = self.next_token()
         if token.is_err():
@@ -82,37 +81,92 @@ class Parser:
             return value
         if (result := self.expect_value(TokenType.Paren, "]")).is_err():
             return result
-        return value
+        return Node.Type(value=value, loc=paren.loc)
 
     @parser_func
     def parse_type_atom(self):
-        if (result := self.expect_type(TokenType.Type)).is_err():
-            if (result_inner := self.expect_type(TokenType.Nil)).is_err():
-                return result
-            result = result_inner
-        if result.type == TokenType.Nil:
-            return Node.Type(value=Type.Nil(), loc=result.loc)
-        elif result.value == "type":
-            return Node.Type(value=Type.Type(), loc=result.loc)
+        if self.peek().type != TokenType.Type:
+            if self.peek().type != TokenType.Nil:
+                return ParserErr.ExpectedTypeExpr(loc=self.restore[-1].loc)
+            loc = self.restore[-1].loc
+            self.restore.pop()
+            return Type.Nil()
+        result = self.restore.pop()
+        if result.value == "type":
+            return Type.Type()
         elif result.value == "bool":
-            return Node.Type(value=Type.Bool(), loc=result.loc)
+            return Type.Bool()
         elif result.value == "int":
-            return Node.Type(value=Type.Int(), loc=result.loc)
+            return Type.Int()
         elif result.value == "str":
-            return Node.Type(value=Type.Str(), loc=result.loc)
+            return Type.Str()
         elif result.value == "sym":
-            return Node.Type(value=Type.Sym(), loc=result.loc)
+            return Type.Sym()
         elif result.value == "func":
-            return Node.Type(value=Type.Func(), loc=result.loc)
+            return Type.Func()
         elif result.value == "any":
-            return Node.Type(value=Type.Any(), loc=result.loc)
+            return Type.Any()
         raise ValueError("This shouldn't happen")
 
     @parser_func
-    def parse_type(self):
-        if (result := self.parse_type_atom()).is_err():
+    def parse_type_quote(self):
+        if (result := self.expect_type(TokenType.Quote)).is_err():
             return result
-        return result
+        if (result := self.parse_type()).is_err():
+            return result
+        return Type.Quote(result)
+
+    @parser_func
+    def parse_type_list(self):
+        if (result := self.expect_value(TokenType.Paren, "[")).is_err():
+            return result
+        if (_type := self.parse_type()).is_err():
+            return _type
+        if (result := self.expect_value(TokenType.Paren, "]")).is_err():
+            return result
+        return Type.List(_type)
+
+    @parser_func
+    def parse_type_generic(self):
+        if (ident := self.expect_type(TokenType.Ident)).is_err():
+            return ident
+        if (result := self.expect_value(TokenType.Special, "?")).is_err():
+            return result
+        return Type.Infer(ident.value)
+
+    @parser_func
+    def parse_type_paren(self):
+        if (result := self.expect_value(TokenType.Paren, "(")).is_err():
+            return result
+        _type = self.parse_type()
+        if (result := self.expect_value(TokenType.Paren, ")")).is_err():
+            return result
+        return _type
+
+    @parser_func
+    def parse_type(self):
+        loc = self.source.loc
+        _type = None
+        if self.peek().type == TokenType.Type or self.peek().type == TokenType.Nil:
+            _type = self.parse_type_atom()
+        elif self.peek().value == "'":
+            _type = self.parse_type_quote()
+        elif self.peek().value == "[":
+            _type = self.parse_type_list()
+        elif self.peek().type == TokenType.Ident:
+            _type = self.parse_type_generic()
+        elif self.peek().value == "(":
+            _type = self.parse_type_paren()
+        else:
+            if self.restore:
+                loc = self.restore[-1].loc
+            return ParserErr.ExpectedTypeExpr(loc=copy(loc))
+        if not _type.is_err() and self.peek().value == "|":
+            self.restore.pop()
+            if (result := self.parse_type()).is_err():
+                return result
+            _type = Type.Union(_type, result)
+        return _type
 
     @parser_func
     def parse_bool(self):

@@ -105,7 +105,7 @@ def test_ident():
     assert token.value is None
 
 def test_type():
-    buffer = StringBuffer("[] int str type bool str sym func any")
+    buffer = StringBuffer("[] a? | int str type bool str sym func any")
     lexer = Lexer(buffer)
     values = ["int", "str", "type", "bool", "str", "sym", "func", "any"]
     token = next(lexer)
@@ -114,6 +114,15 @@ def test_type():
     token = next(lexer)
     assert token.type == TokenType.Paren
     assert token.value == "]"
+    token = next(lexer)
+    assert token.type == TokenType.Ident
+    assert token.value == "a"
+    token = next(lexer)
+    assert token.type == TokenType.Special
+    assert token.value == "?"
+    token = next(lexer)
+    assert token.type == TokenType.Special
+    assert token.value == "|"
     for val in values:
         token = next(lexer)
         assert token.type == TokenType.Type

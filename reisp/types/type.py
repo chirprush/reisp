@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
 class BaseType:
-    pass
+    def is_err(self):
+        return False
 
 def resolve_type(values):
     return Type.Any()
@@ -72,7 +73,9 @@ class Type:
         name: str
 
         def show(self):
-            return name + "?"
+            return self.name + "?"
+
+    # TODO: Implement named types and parametric types
 
     @dataclass
     class Union(BaseType):

@@ -12,6 +12,7 @@ class TokenType(Enum):
     Str = auto()
     Ident = auto()
     Quote = auto()
+    Special = auto()
     Paren = auto()
 
     def show(self):
@@ -31,8 +32,8 @@ class TokenType(Enum):
             return "an identifier"
         elif self == TokenType.Quote:
             return "a symbol quote"
-        elif self == TokenType.Paren:
-            return "a parenthesis"
+        elif self == TokenType.Special:
+            return "a special character"
         elif self == TokenType.Paren:
             return "a parenthesis"
         raise ValueError("This shouldn't happen")
