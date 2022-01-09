@@ -75,13 +75,11 @@ class Parser:
 
     @parser_func
     def parse_type_expr(self):
-        if (paren := self.expect_value(TokenType.Paren, "[")).is_err():
-            return paren
+        if (start := self.expect_value(TokenType.Special, "$")).is_err():
+            return start
         if (value := self.parse_type()).is_err():
             return value
-        if (result := self.expect_value(TokenType.Paren, "]")).is_err():
-            return result
-        return Node.Type(value=value, loc=paren.loc)
+        return Node.Type(value=value, loc=start.loc)
 
     @parser_func
     def parse_type_atom(self):
@@ -128,17 +126,23 @@ class Parser:
 
     @parser_func
     def parse_type_generic(self):
-        if (ident := self.expect_type(TokenType.Ident)).is_err():
-            return ident
         if (result := self.expect_value(TokenType.Special, "?")).is_err():
             return result
+        if (ident := self.expect_type(TokenType.Ident)).is_err():
+            return ident
         return Type.Infer(ident.value)
 
     @parser_func
     def parse_type_paren(self):
         if (result := self.expect_value(TokenType.Paren, "(")).is_err():
             return result
-        _type = self.parse_type()
+        if (_type := self.parse_type()).is_err():
+            return _type
+        while (result := self.peek()).value == "|":
+            self.next_token()
+            if (right_type := self.parse_type()).is_err():
+                return right_type
+            _type = Type.Union(_type, right_type)
         if (result := self.expect_value(TokenType.Paren, ")")).is_err():
             return result
         return _type
@@ -153,7 +157,7 @@ class Parser:
             _type = self.parse_type_quote()
         elif self.peek().value == "[":
             _type = self.parse_type_list()
-        elif self.peek().type == TokenType.Ident:
+        elif self.peek().value == "?":
             _type = self.parse_type_generic()
         elif self.peek().value == "(":
             _type = self.parse_type_paren()
@@ -161,11 +165,6 @@ class Parser:
             if self.restore:
                 loc = self.restore[-1].loc
             return ParserErr.ExpectedTypeExpr(loc=copy(loc))
-        if not _type.is_err() and self.peek().value == "|":
-            self.restore.pop()
-            if (result := self.parse_type()).is_err():
-                return result
-            _type = Type.Union(_type, result)
         return _type
 
     @parser_func
@@ -227,7 +226,7 @@ class Parser:
         loc = self.source.loc
         if self.peek().type == TokenType.Nil:
             return self.parse_nil()
-        elif self.peek().value == "[":
+        elif self.peek().value == "$":
             return self.parse_type_expr()
         elif self.peek().type == TokenType.Bool:
             return self.parse_bool()

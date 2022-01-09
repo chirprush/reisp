@@ -36,7 +36,9 @@ class Node:
             return self
 
         def show(self):
-            return "[" + self.value.show() + "]"
+            if isinstance(self.value, Type.Union):
+                return "$(" + self.value.show() + ")"
+            return "$" + self.value.show()
 
     @dataclass
     class Bool(BaseNode):

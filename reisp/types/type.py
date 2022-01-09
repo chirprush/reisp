@@ -73,9 +73,7 @@ class Type:
         name: str
 
         def show(self):
-            return self.name + "?"
-
-    # TODO: Implement named types and parametric types
+            return "?" + self.name
 
     @dataclass
     class Union(BaseType):

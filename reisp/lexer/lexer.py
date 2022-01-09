@@ -34,7 +34,7 @@ class Lexer:
         start = copy(self.source.loc)
         if char is None:
             return Token(TokenType.Eof, None, start)
-        elif char in "?|":
+        elif char in "?|$":
             return Token(TokenType.Special, char, start)
         elif char in "()[]":
             return Token(TokenType.Paren, char, start)
