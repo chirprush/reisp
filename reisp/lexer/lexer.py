@@ -5,8 +5,7 @@ from reisp.types.type import type_keywords
 from copy import copy
 
 def is_int(word):
-    # TODO: Add support for negative numbers
-    return word.isnumeric()
+    return word.isnumeric() or (word[0] in "-+" and word[1:].isnumeric())
 
 class Lexer:
     def __init__(self, source):
