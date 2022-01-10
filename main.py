@@ -1,5 +1,6 @@
 from reisp.parser.parser import Parser
 from reisp.env.env import Env
+from reisp.std.register import register_exports
 from reisp.loc import Loc
 from sys import stderr
 from argparse import ArgumentParser
@@ -51,6 +52,7 @@ def run_file(f):
 
 def run_repl():
     env = Env()
+    register_exports(env)
     input_buffer = ReplBuffer()
     parser = Parser(input_buffer)
     while True:
@@ -64,7 +66,7 @@ def run_repl():
                 parser.skip_line()
                 continue
             if (value := node.eval(env)).is_err():
-                show_err(input_buffer, value.node.loc, value.show())
+                show_err(input_buffer, value.loc, value.show())
                 continue
             parser.restore = []
             print(value.show())

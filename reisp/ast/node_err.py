@@ -2,27 +2,37 @@ from reisp.loc import Loc
 from dataclasses import dataclass
 from enum import Enum, auto
 
-class NodeErrType(Enum):
-    ZeroDiv = auto()
-    NotCallable = auto()
-    IdentNotFound = auto()
-    InvalidArgsNum = auto()
-    
 @dataclass
-class NodeErr:
-    type: NodeErrType
-    node: 'BaseNode'
-
-    def show(self):
-        if self.type == NodeErrType.ZeroDiv:
-            return "Division by zero"
-        elif self.type == NodeErrType.NotCallable:
-            return "Cannot call a non-function value"
-        elif self.type == NodeErrType.IdentNotFound:
-            return f"Identifier '{self.node.value}' does not exist"
-        elif self.type == NodeErrType.InvalidArgsNum:
-            return "Invalid number of arguments to function"
-        raise ValueError("This shouldn't happen")
+class BaseNodeErr:
+    loc: Loc
 
     def is_err(self):
         return True
+
+class NodeErr:
+    @dataclass
+    class ZeroDiv(BaseNodeErr):
+        def show(self):
+            return "Division by zero"
+
+    @dataclass
+    class NotCallable(BaseNodeErr):
+        value: 'BaseNode'
+
+        def show(self):
+            return f"Cannot call a non-function value (got {self.value.show()})"
+
+    @dataclass
+    class IdentNotFound(BaseNodeErr):
+        name: str
+
+        def show(self):
+            return f"Identifier '{self.name}' does not exist"
+
+    @dataclass
+    class InvalidArgsNum(BaseNodeErr):
+        got: int
+        expected: int
+
+        def show(self):
+            return f"Invalid number of arguments to function (got {self.got}, expected {self.expected})"

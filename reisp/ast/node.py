@@ -1,5 +1,5 @@
 from reisp.loc import Loc
-from reisp.ast.node_err import NodeErrType, NodeErr
+from reisp.ast.node_err import NodeErr
 from reisp.types.type import BaseType, Type, resolve_type
 from typing import Callable, List as TList
 from dataclasses import dataclass
@@ -96,7 +96,7 @@ class Node:
 
         def eval(self, env):
             if (result := env.get(self.value)) is None:
-                return NodeErr(NodeErrType.IdentNotFound, self)
+                return NodeErr.IdentNotFound(self.loc, self.value)
             return result
 
         def show(self):
@@ -132,7 +132,7 @@ class Node:
             if (func := self.values[0].eval(env)).is_err():
                 return func
             elif not func.is_callable():
-                return NodeErr(NodeErrType.NotCallable, self.values[0])
+                return NodeErr.NotCallable(self.values[0].loc, func)
             return func.call(self, env, self.values[1:])
 
         def show(self):
@@ -146,12 +146,15 @@ class Node:
     @dataclass
     class BuiltinFunc(BaseNode):
         name: str
+        arity: int
         func: Callable
 
         def is_callable(self):
             return True
 
         def call(self, source, env, args):
+            if len(args) != self.arity:
+                return NodeErr.InvalidArgsNum(source.values[0].loc, len(args), self.arity)
             return self.func(source, env, args)
 
         def type(self):
