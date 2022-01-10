@@ -133,7 +133,10 @@ class Node:
                 return func
             elif not func.is_callable():
                 return NodeErr.NotCallable(self.values[0].loc, func)
-            return func.call(self, env, self.values[1:])
+            env.push()
+            result = func.call(self, env, self.values[1:])
+            env.pop()
+            return result
 
         def show(self):
             result = "("
@@ -178,14 +181,11 @@ class Node:
         def call(self, source, env, args):
             if len(args) != len(self.args):
                 return NodeErr(NodeErrType.InvalidArgsNum, source)
-            self.env.push()
             for i, arg in enumerate(self.args):
                 if (value := args[i].eval(env)).is_err():
-                    self.env.pop()
                     return value
-                self.env.add(arg, value)
+                env.add(arg, value)
             result = self.body.eval(env)
-            self.env.pop()
             return result
 
         def type(self):
