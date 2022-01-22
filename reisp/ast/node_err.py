@@ -30,6 +30,13 @@ class NodeErr:
             return f"Identifier '{self.name}' does not exist"
 
     @dataclass
+    class VarAlreadyExists(BaseNodeErr):
+        name: str
+
+        def show(self):
+            return f"Cannot set variable '{self.name}' because it already exists"
+
+    @dataclass
     class InvalidArgsNum(BaseNodeErr):
         got: int
         expected: int

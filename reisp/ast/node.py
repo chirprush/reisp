@@ -133,9 +133,12 @@ class Node:
                 return func
             elif not func.is_callable():
                 return NodeErr.NotCallable(self.values[0].loc, func)
-            env.push()
-            result = func.call(self, env, self.values[1:])
-            env.pop()
+            if isinstance(func, Node.BuiltinFunc):
+                result = func.call(self, env, self.values[1:])
+            else:
+                env.push()
+                result = func.call(self, env, self.values[1:])
+                env.pop()
             return result
 
         def show(self):
@@ -195,4 +198,6 @@ class Node:
             return self
 
         def show(self):
+            if not self.name:
+                return "#<lambda>"
             return f"#<func {self.name}>"
